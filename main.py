@@ -35,6 +35,17 @@ MAX_FILE_SIZE = 30 * 4000 * 4000  # 30 MB
 # Command prefix
 bot = commands.Bot(command_prefix="!", intents=intents)
 
+# Bot commands
+@bot.command(name="heel")
+@commands.is_owner()
+async def heel(ctx, channel: discord.TextChannel):
+    config = load_config()
+    config["channel_id"] = channel.id
+    config["guild_id"] = ctx.guild.id
+    save_config(config)
+    await ctx.send(f"i exist to serve")
+    print(f"Relay channel configured: {channel.name, channel.id} in guild {ctx.guild.id}")
+
 # Events
 @bot.event
 async def on_ready():
@@ -50,6 +61,7 @@ async def on_message(message):
 
     # Only process DMs
     if not isinstance(message.channel, discord.DMChannel):
+        await bot.process_commands(message)
         return
 
     # Load guild and channel config
@@ -100,7 +112,6 @@ async def on_message(message):
 
         # Confirm to sender
         await message.author.send("your message has been relayed.")
-        print(f"Message relayed from {message.author} ({message.author.id})")
 
     except Exception as e:
         print(f"Error relaying message: {e}")
